@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AmCoMaTo Technology — Demo Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1113; --panel:#141518; --muted:#a6a6a6; --accent:#ffd700; --primary:#1e4e79; --card:#222;
+      --glass: rgba(255,255,255,0.03);
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#070809 0%, #0f1113 100%);color:#fff}
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,0.03);position:sticky;top:0;z-index:50}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{font-weight:800;color:var(--accent);font-size:20px}
+    .search{display:flex;align-items:center;gap:8px}
+    .search input{width:320px;padding:10px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff}
+    .icon-btn{background:transparent;border:1px solid rgba(255,255,255,0.03);padding:8px 12px;border-radius:12px;color:#fff;cursor:pointer}
+
+    main{max-width:1200px;margin:28px auto;padding:0 18px}
+    .hero{background:linear-gradient(90deg, rgba(68,45,98,0.25), rgba(36,60,80,0.25));padding:36px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .hero h1{margin:0;font-size:28px;color:var(--accent)}
+    .hero p{margin:6px 0 0;color:var(--muted)}
+
+    .categories{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}
+    .cat-btn{background:var(--primary);padding:8px 12px;border-radius:12px;border:none;color:#fff;cursor:pointer}
+    .cat-btn.active{background:var(--accent);color:#000;font-weight:600}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:16px}
+    .card{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:center;text-align:center}
+    .thumb{height:120px;width:100%;border-radius:8px;background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0,0,0,0.1));display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+    .pname{font-weight:700;margin-top:12px;color:var(--accent);font-size:15px}
+    .pdesc{font-size:13px;color:var(--muted);margin-top:6px}
+    .price{margin-top:10px;font-weight:700}
+    .add{margin-top:12px;padding:8px 12px;border-radius:10px;border:none;background:var(--primary);cursor:pointer;color:#fff}
+
+    .floating-cart{position:fixed;right:22px;bottom:22px;background:var(--accent);color:#000;padding:12px 14px;border-radius:999px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.5)}
+
+    /* modal/cart */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:60}
+    .overlay.show{display:flex}
+    .modal{background:var(--panel);padding:18px;border-radius:12px;min-width:320px;max-width:920px;max-height:80vh;overflow:auto}
+    .modal h2{margin:0 0 8px}
+
+    .cart-list{display:flex;flex-direction:column;gap:10px}
+    .cart-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border-radius:8px;background:var(--glass)}
+    .qty-controls{display:flex;gap:6px;align-items:center}
+    .ghost{opacity:0.6}
+
+    /* notification */
+    .notif{position:fixed;right:22px;bottom:90px;background:#4caf50;color:#fff;padding:12px 16px;border-radius:10px;box-shadow:0 8px 18px rgba(0,0,0,0.4);display:flex;gap:12px;align-items:center;opacity:0;transform:translateY(8px);transition:all .28s ease;z-index:70}
+    .notif.show{opacity:1;transform:translateY(0)}
+
+    /* responsive */
+    @media (max-width:720px){.search input{width:140px}.hero{flex-direction:column;align-items:flex-start}.floating-cart{right:12px;bottom:12px}}
+
+    /* simple forms */
+    .row{display:flex;gap:8px}
+    input,button,select{font-family:inherit}
+    .form-field{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+    .btn{padding:10px 12px;border-radius:8px;border:none;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#000;font-weight:700}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">AmCoMaTo Technology</div>
+      <div class="ghost">— Premium Gadgets & Tech</div>
+    </div>
+
+    <div class="search">
+      <input id="searchInput" placeholder="Search for gadgets, categories or descriptions..." />
+      <button id="searchBtn" class="icon-btn">🔍</button>
+      <button id="loginBtn" class="icon-btn">👤</button>
+      <button id="openCart" class="icon-btn">🛒 <span id="cartCount" style="margin-left:6px">0</span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1>AmCoMaTo Technology — Demo Store</h1>
+        <p>Browse featured gadgets, filter by category, add to cart and try the demo checkout flow.</p>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700;color:var(--muted)">Free demo — no real payments</div>
+        <div style="margin-top:6px"><button id="viewAll" class="btn ghost">View all products</button></div>
+      </div>
+    </section>
+
+    <div class="categories" id="categories"></div>
+
+    <div id="title" style="font-size:20px;margin-top:6px">FEATURED GADGETS & TECH</div>
+
+    <div class="grid" id="productGrid"></div>
+
+  </main>
+
+  <button class="floating-cart" id="floatingCart">Open Cart (0)</button>
+
+  <!-- notification -->
+  <div class="notif" id="notif">Added to cart</div>
+
+  <!-- Overlay / Modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modalContent"></div>
+  </div>
+
+  <!-- Simple Login/Register Modals inside the modalContent -->
+
+  <script>
+    // Product data ported from the uploaded Python file (/mnt/data/tyty.py)
+    const PRODUCTS = [
+      {id:1,name:"Acer Predator Helios 18 PH18-72-94D1 Gaming Laptop",price:"₱1,999.00",desc:"i9, 32GB RAM, RTX 4080",color:"#4A6E8A",category:"Laptops & Mobile Devices"},
+      {id:6,name:"BMAX B6 Pro Mini PC",price:"₱1,299.00",desc:"Intel i5, 16GB RAM, 512GB SSD",color:"#2B5D3A",category:"Pre-Build"},
+      {id:2,name:"Logitech G PRO X TKL Rapid Wired Gaming Keyboard",price:"₱129.99",desc:"Tactile Switches, RGB",color:"#804A8A",category:"Peripherals"},
+      {id:3,name:"FURYCUBE G9 Wireless Gaming Mouse",price:"₱79.50",desc:"Lightweight, 12k DPI",color:"#4A8A61",category:"Peripherals"},
+      {id:4,name:"GIGABYTE M32UC Curved Gaming Monitor",price:"₱450.00",desc:"144Hz, HDR support",color:"#8A794A",category:"Peripherals"},
+      {id:5,name:"JBL Tune 660NC",price:"₱199.00",desc:"Hi-Res Audio, 76h Battery",color:"#5A4A8A",category:"Accessories"},
+      {id:10,name:"ASUS ZenWIFI Pro ET12 Mesh Wi-Fi System",price:"₱189.00",desc:"Whole home coverage",color:"#4A8A7A",category:"Components"},
+      {id:7,name:"Apple Watch Series 10",price:"₱299.00",desc:"Health tracking, GPS",color:"#4A7A8A",category:"Accessories"},
+      {id:8,name:"Samsung Portable SSD T7 Shield",price:"₱149.99",desc:"2TB, USB 3.1, Rugged design",color:"#7A8A4A",category:"Accessories"},
+      {id:9,name:"Logitech MX Brio Ultra HD 4K Webcam",price:"₱125.00",desc:"8.5MP Sony STARVIS sensor, dual mics",color:"#6A4A8A",category:"Peripherals"},
+      {id:11,name:"Microsoft 365 Business Premium Subscription",price:"₱150.00",desc:"Productivity software bundle, 12 Month Subscription",color:"#308060",category:"OS & Softwares"}
+    ];
+
+    // Derived categories
+    const CATEGORIES = ["ALL PRODUCTS","Components","Peripherals","Accessories","PC Furniture","OS & Softwares","Laptops & Mobile Devices","Pre-Build"];
+
+    // App state
+    let cart = JSON.parse(localStorage.getItem('demo_cart') || '[]');
+    let currentCategory = 'ALL PRODUCTS';
+
+    // DOM refs
+    const productGrid = document.getElementById('productGrid');
+    const categoriesEl = document.getElementById('categories');
+    const titleEl = document.getElementById('title');
+    const notif = document.getElementById('notif');
+    const overlay = document.getElementById('overlay');
+    const modalContent = document.getElementById('modalContent');
+    const cartCount = document.getElementById('cartCount');
+    const floatingCart = document.getElementById('floatingCart');
+    const openCartBtn = document.getElementById('openCart');
+
+    function formatPrice(p){ return p; }
+
+    function renderCategories(){
+      categoriesEl.innerHTML='';
+      CATEGORIES.forEach(cat=>{
+        const b = document.createElement('button');
+        b.className='cat-btn'+(cat===currentCategory? ' active':'');
+        b.textContent = cat;
+        b.onclick = ()=>{ currentCategory=cat; filterProducts(cat); }
+        categoriesEl.appendChild(b);
+      });
+    }
+
+    function createCard(p){
+      const c = document.createElement('div'); c.className='card';
+      const t = document.createElement('div'); t.className='thumb'; t.style.background = `linear-gradient(135deg, ${p.color}30, rgba(0,0,0,0.1))`; t.textContent='[Product Image]';
+      const name = document.createElement('div'); name.className='pname'; name.textContent=p.name;
+      const desc = document.createElement('div'); desc.className='pdesc'; desc.textContent=p.desc;
+      const pr = document.createElement('div'); pr.className='price'; pr.textContent=p.price;
+      const btn = document.createElement('button'); btn.className='add'; btn.textContent='Add to Cart';
+      btn.onclick = ()=>{ addToCart(p); }
+      c.appendChild(t); c.appendChild(name); c.appendChild(desc); c.appendChild(pr); c.appendChild(btn);
+      return c;
+    }
+
+    function populateGrid(list){
+      productGrid.innerHTML='';
+      if(!list.length){ productGrid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted)">No products found.</div>'; return }
+      list.forEach(p=> productGrid.appendChild(createCard(p)));
+    }
+
+    function filterProducts(cat){
+      if(cat==='ALL PRODUCTS'){ populateGrid(PRODUCTS); titleEl.textContent='FEATURED GADGETS & TECH'; }
+      else{ const res = PRODUCTS.filter(x=> x.category===cat); populateGrid(res); titleEl.textContent=`RESULTS FOR: ${cat.toUpperCase()}` }
+      renderCategories();
+    }
+
+    // Search
+    document.getElementById('searchBtn').addEventListener('click', ()=> performSearch());
+    document.getElementById('searchInput').addEventListener('keydown', e=>{ if(e.key==='Enter') performSearch(); });
+    function performSearch(){
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      if(!q){ filterProducts(currentCategory); return }
+      const res = PRODUCTS.filter(p=> p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+      populateGrid(res); titleEl.textContent = `SEARCH RESULTS FOR: '${q.toUpperCase()}'`;
+    }
+
+    // Cart logic
+    function saveCart(){ localStorage.setItem('demo_cart', JSON.stringify(cart)); updateCartUI(); }
+    function updateCartUI(){
+      const totalItems = cart.reduce((s,i)=> s + (i.quantity||1), 0);
+      cartCount.textContent = totalItems;
+      floatingCart.textContent = `Open Cart (${totalItems})`;
+      document.getElementById('cartCount').textContent = totalItems;
+    }
+
+    function showNotif(msg='Added to cart'){
+      notif.textContent = msg; notif.classList.add('show');
+      setTimeout(()=> notif.classList.remove('show'), 2000);
+    }
+
+    function addToCart(product){
+      const idx = cart.findIndex(c=> c.id===product.id);
+      if(idx>-1) cart[idx].quantity = (cart[idx].quantity||1) + 1;
+      else cart.push(Object.assign({}, product, {quantity:1}));
+      saveCart(); showNotif('Product has been added to the cart!');
+    }
+
+    function openCart(){
+      overlay.classList.add('show');
+      modalContent.innerHTML = `<h2>Your Cart</h2>`;
+      const list = document.createElement('div'); list.className='cart-list';
+      if(cart.length===0){ list.innerHTML = '<div style="padding:18px;color:var(--muted)">Your cart is currently empty.</div>' }
+      cart.forEach(item=>{
+        const row = document.createElement('div'); row.className='cart-item';
+        const left = document.createElement('div'); left.style.flex='1'; left.innerHTML = `<div style="font-weight:700">${item.name}</div><div style="font-size:13px;color:var(--muted)">${item.desc}</div>`;
+        const right = document.createElement('div'); right.style.display='flex'; right.style.alignItems='center'; right.style.gap='10px';
+        const qty = document.createElement('div'); qty.className='qty-controls';
+        const minus = document.createElement('button'); minus.textContent='-'; minus.className='btn ghost'; minus.onclick = ()=>{ changeQty(item.id, -1); }
+        const qlabel = document.createElement('div'); qlabel.textContent = item.quantity||1; qlabel.style.minWidth='24px'; qlabel.style.textAlign='center';
+        const plus = document.createElement('button'); plus.textContent='+'; plus.className='btn ghost'; plus.onclick = ()=>{ changeQty(item.id, +1); }
+        qty.appendChild(minus); qty.appendChild(qlabel); qty.appendChild(plus);
+        const p = document.createElement('div'); p.textContent = item.price; p.style.fontWeight='700';
+        right.appendChild(qty); right.appendChild(p);
+        row.appendChild(left); row.appendChild(right);
+        list.appendChild(row);
+      });
+      modalContent.appendChild(list);
+
+      const subtotal = cart.reduce((s,i)=>{
+        const v = parseFloat((i.price+'').replace('₱','').replace(/,/g,'')) || 0; return s + v * (i.quantity||1);
+      },0);
+      const bottom = document.createElement('div'); bottom.style.display='flex'; bottom.style.justifyContent='space-between'; bottom.style.marginTop='16px';
+      bottom.innerHTML = `<div style="font-weight:700">SUBTOTAL: ₱${subtotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>`;
+      const actions = document.createElement('div');
+      const returnBtn = document.createElement('button'); returnBtn.textContent='Return to Products'; returnBtn.className='btn ghost'; returnBtn.onclick = ()=> closeModal();
+      const checkout = document.createElement('button'); checkout.textContent='Proceed to Checkout'; checkout.className='btn primary'; checkout.onclick = ()=> { alert('Demo checkout — no payment processed.'); closeModal(); }
+      actions.appendChild(returnBtn); actions.appendChild(checkout);
+      bottom.appendChild(actions);
+      modalContent.appendChild(bottom);
+    }
+
+    function changeQty(id, delta){
+      const idx = cart.findIndex(c=> c.id===id); if(idx===-1) return;
+      cart[idx].quantity = (cart[idx].quantity||1) + delta;
+      if(cart[idx].quantity <= 0) cart.splice(idx,1);
+      saveCart(); openCart();
+    }
+
+    function closeModal(){ overlay.classList.remove('show'); modalContent.innerHTML=''; }
+
+    overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+
+    document.getElementById('loginBtn').addEventListener('click', ()=> openAuth('login'));
+    document.getElementById('viewAll').addEventListener('click', ()=> { currentCategory='ALL PRODUCTS'; filterProducts('ALL PRODUCTS'); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('floatingCart').addEventListener('click', ()=> openCart());
+    document.getElementById('openCart').addEventListener('click', ()=> openCart());
+
+    // Auth modals
+    function openAuth(mode='login'){
+      overlay.classList.add('show');
+      if(mode==='login'){
+        modalContent.innerHTML = `
+          <h2>Login</h2>
+          <div class="form-field"><label>Email</label><input id="aemail" placeholder="you@example.com" /></div>
+          <div class="form-field"><label>Password</label><input id="apass" type="password" placeholder="password" /></div>
+          <div style="display:flex;gap:8px;margin-top:10px"><button class="btn primary" id="doLogin">Login</button><button class="btn ghost" id="toRegister">Create account</button></div>
+          <div style="margin-top:10px;color:var(--muted)"><a href="#" id="forgotPass">Forgot password?</a></div>
+        `;
+        document.getElementById('toRegister').onclick = ()=> openAuth('register');
+        document.getElementById('forgotPass').onclick = (e)=>{ e.preventDefault(); openAuth('reset'); }
+        document.getElementById('doLogin').onclick = ()=>{ alert('Demo login — no backend.'); closeModal(); }
+      } else if(mode==='register'){
+        modalContent.innerHTML = `
+          <h2>Create your Account</h2>
+          <div class="row"><div style="flex:1" class="form-field"><label>First name*</label><input id="rfirst" /></div><div style="flex:1" class="form-field"><label>Last name*</label><input id="rlast" /></div></div>
+          <div class="form-field"><label>Email</label><input id="remail" /></div>
+          <div class="form-field"><label>Password</label><input id="rpass" type="password" /></div>
+          <div style="display:flex;gap:8px;margin-top:10px"><button class="btn primary" id="doRegister">Create account</button><button class="btn ghost" id="toLogin">Cancel</button></div>
+        `;
+        document.getElementById('toLogin').onclick = ()=> closeModal();
+        document.getElementById('doRegister').onclick = ()=>{ alert('Demo account created (not persisted).'); closeModal(); }
+      } else if(mode==='reset'){
+        modalContent.innerHTML = `
+          <h2>Reset Password</h2>
+          <div class="form-field"><label>Email address</label><input id="resetEmail" /></div>
+          <div style="display:flex;gap:8px;margin-top:10px"><button class="btn primary" id="doReset">Send reset email</button><button class="btn ghost" id="toLogin2">Cancel</button></div>
+        `;
+        document.getElementById('toLogin2').onclick = ()=> closeModal();
+        document.getElementById('doReset').onclick = ()=>{ alert('If this were real, an email would be sent.'); closeModal(); }
+      }
+    }
+
+    // Initialize
+    renderCategories(); filterProducts('ALL PRODUCTS'); updateCartUI();
+
+    // small touch: animate hero on load
+    document.addEventListener('DOMContentLoaded', ()=>{ const h=document.querySelector('.hero'); h.style.transform='translateY(-6px)'; h.style.opacity='0'; setTimeout(()=>{ h.style.transition='all .6s cubic-bezier(.2,.9,.3,1)'; h.style.transform='translateY(0)'; h.style.opacity='1'; },50) })
+
+  </script>
+</body>
+</html>
